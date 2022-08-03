@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.IO;
 
 public class NewBehaviourScript : MonoBehaviour
 {
@@ -24,6 +25,8 @@ public class NewBehaviourScript : MonoBehaviour
         if(Input.GetButtonDown("Fire2"))
         {
             print(note);
+            File.WriteAllText(Application.dataPath + "/note.txt", note);
+            string a = File.ReadAllText(Application.dataPath + "/note.txt");
         }
     }
 }
