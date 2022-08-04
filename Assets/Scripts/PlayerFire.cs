@@ -41,11 +41,16 @@ public class PlayerFire : MonoBehaviour
         // Ray 를 이용해서 총알을 발사하고 싶다.
         // Ray 필요
         Ray ray = new Ray(Camera.main.transform.position, Camera.main.transform.forward);
+        //Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         // RaycastHit
         RaycastHit hitInfo;
+
+        // 플레이어만 빼고 충돌하게 하고 싶다.
+        int layer = 1 << gameObject.layer;
+
         // Ray 던진다.
         // -> 만약 충돌했다면
-        if (Physics.Raycast(ray, out hitInfo))
+        if (Physics.Raycast(ray, out hitInfo, 1000, ~layer))
         {
             // -> 부딪힌 지점에 파편효과 표시
             // 1. 파편이 부딪힌 지점으로 위치
