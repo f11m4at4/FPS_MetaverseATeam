@@ -128,8 +128,13 @@ public class Enemy : MonoBehaviour
     // 체력이 남아있으면 상태를 피격으로 전환하고 싶다.
     // 그렇지않으면 상태를 죽음으로 전환하고 싶다.
     // 죽음 상태가 되면 충돌되지 않도록 처리
+    // 넉백처리
+    // 필요속성 : 넉백스피드
+    public float knockBackSpeed = 2;
+    Vector3 knockEndPos;
+
     public int hp = 3;
-    public void OnDamageProcess()
+    public void OnDamageProcess(Vector3 shootDirection)
     {
         // 3대맞으면 죽도록 처리하자
         hp--;
@@ -143,7 +148,13 @@ public class Enemy : MonoBehaviour
         else
         {
             m_state = EnemyState.Damage;
+            //transform.position += shootDirection * knockBackSpeed;
+            //cc.Move(shootDirection * knockBackSpeed);
+            shootDirection.y = 0;
+            knockEndPos = transform.position + shootDirection * knockBackSpeed;
         }
+
+        currentTime = 0;
     }
 
     // 일정시간 기다렸다가 상태를 대기로 전환하고 싶다.
@@ -151,6 +162,9 @@ public class Enemy : MonoBehaviour
     public float damageDelayTime = 2;
     private void Damage()
     {
+        // 넉백 애니메이션 구현
+        transform.position = Vector3.Lerp(transform.position, knockEndPos, 10 * Time.deltaTime);
+
         currentTime += Time.deltaTime;
         // 2. 시간이 됐으니까
         if (currentTime > damageDelayTime)

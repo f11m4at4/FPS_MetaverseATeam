@@ -66,7 +66,8 @@ public class PlayerFire : MonoBehaviour
             if (enemy)
             {
                 // -> 피격 이벤트를 호출하자
-                enemy.OnDamageProcess();
+                enemy.OnDamageProcess(ray.direction);
+
             }
         }
     }
