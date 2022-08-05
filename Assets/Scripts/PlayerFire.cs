@@ -60,6 +60,14 @@ public class PlayerFire : MonoBehaviour
             // 2. 효과 재생
             bulletPS.Stop();
             bulletPS.Play();
+
+            // 만약 맞은 녀석이 Enemy 라면
+            Enemy enemy = hitInfo.transform.GetComponent<Enemy>();
+            if (enemy)
+            {
+                // -> 피격 이벤트를 호출하자
+                enemy.OnDamageProcess();
+            }
         }
     }
 
