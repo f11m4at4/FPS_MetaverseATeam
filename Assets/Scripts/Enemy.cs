@@ -3,6 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+// Idle 에서 Move 로 전환되는 애니메이션 처리를 하고 싶다.
+// 필요속성 : Animator
 public class Enemy : MonoBehaviour
 {
     #region 상태정의
@@ -31,10 +33,14 @@ public class Enemy : MonoBehaviour
     CharacterController cc;
     #endregion
 
+    // 필요속성 : Animator
+    Animator anim;
+
     // Start is called before the first frame update
     void Start()
     {
         cc = GetComponent<CharacterController>();
+        anim = GetComponentInChildren<Animator>();
     }
 
     // Update is called once per frame
@@ -74,6 +80,8 @@ public class Enemy : MonoBehaviour
             // 3. 상태를 이동으로 전환
             m_state = EnemyState.Move;
             currentTime = 0;
+            // 애니메이션의 상태도 이동으로 전환
+            anim.SetTrigger("Move");
         }
     }
 
@@ -99,6 +107,7 @@ public class Enemy : MonoBehaviour
         if(distance < attackRange)
         {
             m_state = EnemyState.Attack;
+            currentTime = attackDelayTime;
         }
     }
 
@@ -113,12 +122,14 @@ public class Enemy : MonoBehaviour
         {
             currentTime = 0;
             print("attack!!!");
+            anim.SetTrigger("Attack");
         }
         // 타겟이 공격범위를 벗어나면 상태를 이동으로 전환하고 싶다.
         float distance = Vector3.Distance(target.position, transform.position);
         if(distance > attackRange)
         {
             m_state = EnemyState.Move;
+            anim.SetTrigger("Move");
         }
     }
 
