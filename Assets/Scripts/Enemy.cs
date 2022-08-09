@@ -46,7 +46,7 @@ public class Enemy : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        print("state : " + m_state);
+        //print("state : " + m_state);
         switch(m_state)
         {
             case EnemyState.Idle:
@@ -130,6 +130,8 @@ public class Enemy : MonoBehaviour
         {
             m_state = EnemyState.Move;
             anim.SetTrigger("Move");
+            //anim.Play("Move");
+            //anim.CrossFade()
         }
     }
 
@@ -154,11 +156,13 @@ public class Enemy : MonoBehaviour
         {
             m_state = EnemyState.Die;
             cc.enabled = false;
+            anim.SetTrigger("Die");
         }
         // 그렇지 않으면 상태를 피격으로 전환하고 싶다.
         else
         {
             m_state = EnemyState.Damage;
+            anim.SetTrigger("Damage");
             //transform.position += shootDirection * knockBackSpeed;
             //cc.Move(shootDirection * knockBackSpeed);
             shootDirection.y = 0;
