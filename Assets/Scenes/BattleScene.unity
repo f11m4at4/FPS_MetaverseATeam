@@ -823,7 +823,7 @@ MonoBehaviour:
   speed: 3
   attackRange: 2
   attackDelayTime: 2
-  knockBackSpeed: 0.25
+  knockBackSpeed: 2
   hp: 3
   damageDelayTime: 2
   dieSpeed: 0.5

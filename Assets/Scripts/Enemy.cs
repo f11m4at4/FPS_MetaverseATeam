@@ -46,8 +46,8 @@ public class Enemy : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        //print("state : " + m_state);
-        switch(m_state)
+        print("state : " + m_state);
+        switch (m_state)
         {
             case EnemyState.Idle:
                 Idle();
@@ -59,10 +59,10 @@ public class Enemy : MonoBehaviour
                 Attack();
                 break;
             case EnemyState.Damage:
-                Damage();
+                //Damage();
                 break;
             case EnemyState.Die:
-                Die();
+               // Die();
                 break;
         }
     }
@@ -149,6 +149,7 @@ public class Enemy : MonoBehaviour
     public int hp = 3;
     public void OnDamageProcess(Vector3 shootDirection)
     {
+        StopAllCoroutines();
         // 3대맞으면 죽도록 처리하자
         hp--;
         // 체력이 없을 때 상태를 죽음으로 전환하고 싶다.
@@ -157,6 +158,7 @@ public class Enemy : MonoBehaviour
             m_state = EnemyState.Die;
             cc.enabled = false;
             anim.SetTrigger("Die");
+            StartCoroutine(Die());
         }
         // 그렇지 않으면 상태를 피격으로 전환하고 싶다.
         else
@@ -167,6 +169,7 @@ public class Enemy : MonoBehaviour
             //cc.Move(shootDirection * knockBackSpeed);
             shootDirection.y = 0;
             knockEndPos = transform.position + shootDirection * knockBackSpeed;
+            StartCoroutine(Damage());
         }
 
         currentTime = 0;
@@ -175,30 +178,71 @@ public class Enemy : MonoBehaviour
     // 일정시간 기다렸다가 상태를 대기로 전환하고 싶다.
     // 필요속성 : 피격대기시간
     public float damageDelayTime = 2;
-    private void Damage()
+    private IEnumerator Damage()
     {
+        float curTime = 0;
         // 넉백 애니메이션 구현
-        transform.position = Vector3.Lerp(transform.position, knockEndPos, 10 * Time.deltaTime);
-
-        currentTime += Time.deltaTime;
-        // 2. 시간이 됐으니까
-        if (currentTime > damageDelayTime)
+        // 넉백 위치에 도착할 때 까지 반복하고 싶다.
+        while (curTime < damageDelayTime)
         {
-            // 3. 상태를 이동으로 전환
-            m_state = EnemyState.Idle;
-            currentTime = 0;
+            curTime += Time.deltaTime;
+
+            transform.position = Vector3.Lerp(transform.position, knockEndPos, 10 * Time.deltaTime);
+
+            yield return null;
         }
+        transform.position = knockEndPos;
+
+        // 일정시간 기다렸다가
+        //yield return new WaitForSeconds(damageDelayTime);
+        // 상태를 Idle 로 전환하고 싶다.
+        m_state = EnemyState.Idle;
+
+        //currentTime += Time.deltaTime;
+        //// 2. 시간이 됐으니까
+        //if (currentTime > damageDelayTime)
+        //{
+        //    // 3. 상태를 이동으로 전환
+        //    m_state = EnemyState.Idle;
+        //    currentTime = 0;
+        //}
     }
 
     // 아래로 사라지도록 하자.
     // 없어지면 제거하자. -2
     public float dieSpeed = 0.5f;
-    private void Die()
+    //private void Die()
+    //{
+    //    // 애니메이션이 다 재생되고 
+    //    // 2 초 기다렸다가 
+    //    currentTime += Time.deltaTime;
+    //    if (currentTime > 2)
+    //    {
+    //        // 아래로 사라진다.
+    //        transform.position += Vector3.down * dieSpeed * Time.deltaTime;
+    //        if (transform.position.y < -3)
+    //        {
+    //            Destroy(gameObject);
+    //        }
+    //    }
+    //}
+
+    private IEnumerator Die()
     {
-        transform.position += Vector3.down * dieSpeed * Time.deltaTime;
-        if(transform.position.y < -3)
+        // 애니메이션이 다 재생되고 
+        // 2 초 기다렸다가 
+        yield return new WaitForSeconds(2);
+
+        while (true)
         {
-            Destroy(gameObject);
+            // 아래로 사라진다.
+            transform.position += Vector3.down * dieSpeed * Time.deltaTime;
+            if (transform.position.y < -3)
+            {
+                Destroy(gameObject);
+                yield break;
+            }
+            yield return null;
         }
     }
 }
