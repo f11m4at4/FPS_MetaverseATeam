@@ -12,6 +12,9 @@ public class CamRotate : MonoBehaviour
     float mx;
     float my;
 
+    public bool bUseHorizontal = true;
+    public bool bUseVertical = true;
+
     void Start()
     {
         // 시작할 때 사용자가 정해준 각도 값으로 세팅
@@ -27,8 +30,12 @@ public class CamRotate : MonoBehaviour
         float h = Input.GetAxis("Mouse X");
         float v = Input.GetAxis("Mouse Y");
 
-        mx += h * rotSpeed * Time.deltaTime;
-        my += v * rotSpeed * Time.deltaTime;
+        if(bUseHorizontal)
+            mx += h * rotSpeed * Time.deltaTime;
+
+        if(bUseVertical)
+            my += v * rotSpeed * Time.deltaTime;
+
         // -60 ~ 60 으로 각도 제한걸기
         // x축 -> pitch, y -> Yaw, z -> Roll
         my = Mathf.Clamp(my, -60, 60);

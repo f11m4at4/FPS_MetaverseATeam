@@ -27,9 +27,12 @@ public class PlayerMove : MonoBehaviour
     bool isJumping = false;
     int isJumpingcount = 0;
     public int maxJumpCount = 2;
+
+    Animator anim;
     void Start()
     {
         cc = GetComponent<CharacterController>();
+        anim = GetComponentInChildren<Animator>();
     }
 
     // Update is called once per frame
@@ -39,6 +42,9 @@ public class PlayerMove : MonoBehaviour
         // 1. 사용자의 입력에 따라
         float h = Input.GetAxis("Horizontal");
         float v = Input.GetAxis("Vertical");
+
+        anim.SetFloat("Speed", v);
+        anim.SetFloat("Direction", h);
         // 2. 방향이 필요
         Vector3 dir = new Vector3(h, 0, v);
         // -> 내가 바라보는 방향을 기준으로 가고싶다.
@@ -47,6 +53,17 @@ public class PlayerMove : MonoBehaviour
         // 수직속도 구하기
         yVelocity += gravity * Time.deltaTime;
 
+        // 바닥과의 거리가 0.05 보다 크면 공중에 있다.
+        Ray ray = new Ray(transform.position, Vector3.down);
+        RaycastHit hitInfo;
+        int layer = 1 << gameObject.layer;
+        if(Physics.Raycast(ray, out hitInfo, 0.1f, ~layer) == false)
+        {
+            // 공중
+            anim.SetBool("IsInAir", true);
+
+        }
+
         // 만약 바닥에 닿아있다면
         if (cc.collisionFlags == CollisionFlags.Below)
         {
@@ -54,6 +71,9 @@ public class PlayerMove : MonoBehaviour
             yVelocity = 0;
             //isJumping = false;
             isJumpingcount = 0;
+
+            anim.SetBool("IsInAir", false);
+
         }
 
         // 점프를 안하고 있을 때 그리고
@@ -64,6 +84,7 @@ public class PlayerMove : MonoBehaviour
             yVelocity = jumpPower;
             //isJumping = true;
             isJumpingcount++;
+            anim.SetBool("IsInAir", true);
         }
 
         dir.y = yVelocity;
