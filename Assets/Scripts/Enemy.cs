@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 
 // Idle 에서 Move 로 전환되는 애니메이션 처리를 하고 싶다.
 // 필요속성 : Animator
@@ -36,11 +37,13 @@ public class Enemy : MonoBehaviour
     // 필요속성 : Animator
     Animator anim;
 
+    NavMeshAgent agent;
     // Start is called before the first frame update
     void Start()
     {
         cc = GetComponent<CharacterController>();
         anim = GetComponentInChildren<Animator>();
+        agent = GetComponent<NavMeshAgent>();
     }
 
     // Update is called once per frame
@@ -82,6 +85,8 @@ public class Enemy : MonoBehaviour
             currentTime = 0;
             // 애니메이션의 상태도 이동으로 전환
             anim.SetTrigger("Move");
+
+            agent.enabled = true;
         }
     }
 
@@ -98,16 +103,19 @@ public class Enemy : MonoBehaviour
         float distance = dir.magnitude;
         dir.Normalize();
         dir.y = 0;
+
+        agent.destination = target.position;
         // 2. 이동하고 싶다.
-        cc.SimpleMove(dir * speed);
+        //cc.SimpleMove(dir * speed);
         // Enemy 의 방향을 dir 로 하자
-        transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(dir), 10 * Time.deltaTime);
+        //transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(dir), 10 * Time.deltaTime);
 
         // 타겟이 공격범위안에 들어오면 상태를 공격으로 전환하고 싶다.
         if(distance < attackRange)
         {
             m_state = EnemyState.Attack;
             currentTime = attackDelayTime;
+            agent.enabled = false;
         }
     }
 
@@ -117,6 +125,11 @@ public class Enemy : MonoBehaviour
     public float attackDelayTime = 2;
     private void Attack()
     {
+        Vector3 dir = target.position - transform.position;
+        dir.Normalize();
+        dir.y = 0;
+        transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(dir), 10 * Time.deltaTime);
+
         currentTime += Time.deltaTime;
         if(currentTime > attackDelayTime)
         {
@@ -130,6 +143,8 @@ public class Enemy : MonoBehaviour
         {
             m_state = EnemyState.Move;
             anim.SetTrigger("Move");
+
+            agent.enabled = true;
             //anim.Play("Move");
             //anim.CrossFade()
         }
