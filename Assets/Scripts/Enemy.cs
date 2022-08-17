@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -6,6 +5,8 @@ using UnityEngine.AI;
 
 // Idle 에서 Move 로 전환되는 애니메이션 처리를 하고 싶다.
 // 필요속성 : Animator
+// 타겟으로 이동할 수 없는 범위에서는 패트롤 하고 싶다.
+// 필요속성 : 이동할 수 있는 범위
 public class Enemy : MonoBehaviour
 {
     #region 상태정의
@@ -32,6 +33,8 @@ public class Enemy : MonoBehaviour
     public Transform target;
     public float speed = 5;
     CharacterController cc;
+    // 필요속성 : 이동할 수 있는 범위
+    public float moveToTargetRange = 5;
     #endregion
 
     // 필요속성 : Animator
@@ -95,6 +98,8 @@ public class Enemy : MonoBehaviour
     // 타겟이 공격범위안에 들어오면 상태를 공격으로 전환하고 싶다.
     // 필요속성 : 공격범위
     public float attackRange = 2;
+    bool result = false;
+    Vector3 randPos = Vector3.zero;
     private void Move()
     {
         // 타겟쪽으로 이동하고 싶다.
@@ -104,7 +109,42 @@ public class Enemy : MonoBehaviour
         dir.Normalize();
         dir.y = 0;
 
-        agent.destination = target.position;
+        // 내 시야 범위안에 없고,
+        float dot = Vector3.Dot(transform.forward, dir);
+        // 내 전방벡터
+        Debug.DrawLine(transform.position, transform.position + transform.forward * 5, Color.red);
+        // 타겟쪽으로 향하는 벡터
+        Debug.DrawLine(transform.position, transform.position + dir * 5, Color.red);
+
+        // 타겟으로 이동
+        if (true)//distance < moveToTargetRange && dot > 0.5f)
+        {
+            // 타겟으로 이동하기
+            agent.destination = target.position;
+        }
+        // 그렇지 않으면
+        // 타겟으로 이동할 수 없는 범위에서는 패트롤 하고 싶다.
+        else
+        {
+            // 패트롤
+            // 아직 이동할 곳을 못찾았을 때
+            if (result == false)
+            {
+                result = GetRandomPosition(transform.position, out randPos, 10);
+            }
+            // 만약 찾았다면
+            else
+            {
+                // -> 목적지를 randPos 로 정해주기
+                agent.destination = randPos;
+                // -> 목적지에 거의 다왔다면
+                if (Vector3.Distance(transform.position, randPos) < 0.1f)
+                {
+                    // -> 다시 찾은 곳이 없도록 해주기
+                    result = false;
+                }
+            }
+        }
         // 2. 이동하고 싶다.
         //cc.SimpleMove(dir * speed);
         // Enemy 의 방향을 dir 로 하자
@@ -117,6 +157,19 @@ public class Enemy : MonoBehaviour
             currentTime = attackDelayTime;
             agent.enabled = false;
         }
+    }
+
+    // 특정 위치를 기준으로 네비게이션이 가능한 위치를 넘겨주는다.
+    private bool GetRandomPosition(Vector3 position, out Vector3 randPos, float range = 3)
+    {
+        Vector3 center = Random.insideUnitSphere * range;
+        center.y = 0;
+        center += position;
+        NavMeshHit hitInfo;
+        bool result = NavMesh.SamplePosition(center, out hitInfo, range, 1);
+
+        randPos = hitInfo.position;
+        return result;
     }
 
     // 일정시간에 한번씩 공격하고 싶다.
@@ -164,6 +217,7 @@ public class Enemy : MonoBehaviour
     public int hp = 3;
     public void OnDamageProcess(Vector3 shootDirection)
     {
+        agent.enabled = false;
         StopAllCoroutines();
         // 3대맞으면 죽도록 처리하자
         hp--;
