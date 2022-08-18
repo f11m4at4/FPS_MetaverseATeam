@@ -3,10 +3,13 @@ using System.Collections.Generic;
 using UnityEngine;
 
 // 사용자가 셰이크를 편집할 수 있는 설정 정보 구조체
+[System.Serializable]
 public struct CameraShakeInfo
 {
     // 진폭
     public float amplitude;
+    // 진동빠르기
+    public float sinSpeed;
 }
 
 // 모든 카메라셰이크 클래스의 부모 클래스

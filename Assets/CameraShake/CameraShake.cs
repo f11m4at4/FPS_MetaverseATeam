@@ -29,7 +29,6 @@ public class CameraShake : MonoBehaviour
     void Start()
     {
         cameraShake = CreateCameraShake(cameraShakeType);
-        cameraShake.Init(targetCamera.position);
     }
 
     public static CameraShakeBase CreateCameraShake(CameraShakeType type)
@@ -39,9 +38,9 @@ public class CameraShake : MonoBehaviour
             case CameraShakeType.Random:
                 return new CS_Random();
             case CameraShakeType.Sine:
-                break;
+                return new CS_Sine();
             case CameraShakeType.Animation:
-                break;
+                return new CS_Animation();
         }
         return null;
     }
@@ -49,14 +48,42 @@ public class CameraShake : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+        if(Input.GetButtonDown("Fire1"))
+        {
+            PlayCameraShake();
+        }
+    }
+
+    void PlayCameraShake()
+    {
+        // 카메라셰이크 타입이 애니메이션이 아닐경우
+        if (cameraShakeType != CameraShakeType.Animation)
+        {
+            StopAllCoroutines();
+            StartCoroutine(Play());
+        }
+        // 애니메이션일 경우
+        else
+        {
+            cameraShake.Play(targetCamera, info);
+        }
     }
 
     // 재생시간동안 카메라셰이크 실행
     IEnumerator Play()
     {
-        // 재생시간동안 카메라셰이크 실행
+        cameraShake.Init(targetCamera.position);
 
+        float currentTime = 0;
+        // 재생시간동안 
+        while (currentTime < playTime)
+        {
+            currentTime += Time.deltaTime;
+            //카메라셰이크 실행
+            cameraShake.Play(targetCamera, info);
+            yield return null;
+        }
         // 끝나면 Stop
+        cameraShake.Stop(targetCamera);
     }
 }
